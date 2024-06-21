@@ -18,4 +18,5 @@
     <string name="continue_working_in_background">Continue working in background?</string>
     <string name="ok">OK</string>
     <string name="you_have_a_meeting_with">You have a meeting with: </string>
+    <string name="reminder">Reminder</string>
 </resources>

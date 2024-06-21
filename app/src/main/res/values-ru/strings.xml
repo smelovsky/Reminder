@@ -18,4 +18,5 @@
     <string name="continue_working_in_background">Продолжить работать в бэкграунде?</string>
     <string name="ok">Понятно</string>
     <string name="you_have_a_meeting_with">У Вас запланирована встреча с: </string>
+    <string name="reminder">Напоминание</string>
 </resources>

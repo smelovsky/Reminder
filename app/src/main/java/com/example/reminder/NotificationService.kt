@@ -83,8 +83,8 @@ class NotificationService : Service() {
                                 }
 
                                 if (showNotification) {
-
                                     sendMessageToActivity(notification)
+                                    sendMessage(notification)
                                 }
 
 
@@ -173,6 +173,26 @@ class NotificationService : Service() {
         sendBroadcast(intent)
     }
 
+    private fun sendMessage(message: String) {
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val channel = NotificationChannel("Reminder", "Notification Service", NotificationManager.IMPORTANCE_DEFAULT)
+        channel.description = "Notifications about meeting"
+        channel.lightColor = Color.BLUE
+        notificationManager.createNotificationChannel(channel)
+
+        val notificationBuilder = NotificationCompat.Builder(this, "updates")
+            .setContentTitle(getString(R.string.you_have_a_meeting_with))
+            .setContentText(message)
+            .setLargeIcon(BitmapFactory.decodeResource(this.resources, R.drawable.feip))
+            .setSmallIcon(R.drawable.baseline_notifications_24)
+            .setColor(Color.BLUE)
+
+        val notification = notificationBuilder.build()
+        notificationManager.notify(77, notification)
+
+
+    }
 
 
 }
