@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Reminder App</string>
+    <string name="edit_screen_title">Edit mode</string>
+    <string name="new_screen_title">Edit mode (new reminder)</string>
+    <string name="user_screen_title">List of users</string>
+    <string name="do_you_really_want_to_close_the_application">Do you really want to close the application?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="save">Save</string>
+    <string name="title">Title*</string>
+    <string name="user">User*</string>
+    <string name="email">Email*</string>
+    <string name="would_you_like_to_delete_selected_reminder">Would you like to delete selected reminder?</string>
+    <string name="date">Date*</string>
+    <string name="time">Time</string>
+    <string name="add_new_reminder">Add new reminder</string>
+    <string name="permissions">Permissions</string>
+    <string name="continue_working_in_background">Continue working in background?</string>
+    <string name="ok">OK</string>
+    <string name="you_have_a_meeting_with">You have a meeting with: </string>
+</resources>
