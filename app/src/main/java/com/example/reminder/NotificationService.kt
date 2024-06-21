@@ -33,6 +33,8 @@ class NotificationService : Service() {
         throw UnsupportedOperationException("Not yet implemented")
     }
 
+    private var notificationId: Int = 0
+
     @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("ForegroundServiceType")
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
@@ -41,7 +43,7 @@ class NotificationService : Service() {
         if (appRequest != null) {
             when (appRequest) {
                 "start" -> {
-                    timer = startTimer("Notification Timer", TIME_MS) {
+                    timer = startTimer() {
 
                         GlobalScope.launch {
                             val reminderList = mainViewModel.getDbApi().appDao().getReminderListByTime()
@@ -81,13 +83,11 @@ class NotificationService : Service() {
                                     }
 
                                 }
+                            }
 
-                                if (showNotification) {
-                                    sendMessageToActivity(notification)
-                                    sendMessage(notification)
-                                }
-
-
+                            if (showNotification) {
+                                sendMessageToActivity(notification)
+                                sendMessage(notificationId++, notification)
                             }
                         }
                     }
@@ -113,21 +113,17 @@ class NotificationService : Service() {
             }
 
         val notificationBuilder = NotificationCompat.Builder(this, channelId )
-
-        val notification = notificationBuilder
             .setOngoing(true)
             .setLargeIcon(BitmapFactory.decodeResource(this.resources, R.drawable.feip))
             .setSmallIcon(R.drawable.baseline_notifications_24)
+            .setColor(Color.BLUE)
             .setPriority(NotificationCompat.PRIORITY_MIN)
             .setCategory(Notification.CATEGORY_SERVICE)
-            .setContentTitle("Info")
-            .setContentText("Location service enabled")
+            .setContentText(getString(R.string.notification_service_enabled))
             .setWhen(GregorianCalendar.getInstance().getTimeInMillis())
-            .setAutoCancel(true)
-            .setColor(Color.BLUE)
             .build()
 
-        startForeground(55, notification )
+        startForeground(55, notificationBuilder )
 
 
         return START_STICKY
@@ -150,14 +146,15 @@ class NotificationService : Service() {
         timer?.cancel()
     }
 
-    private fun startTimer(name: String, timeout: Long, action: () -> Unit) =
-        Timer(name).apply {
+    private fun startTimer(action: () -> Unit) =
+
+        Timer("Notification Timer").apply {
             val newTimerTask = object : TimerTask() {
                 override fun run() {
                     action.invoke()
                 }
             }
-            scheduleAtFixedRate(newTimerTask, 0L, timeout)
+            schedule(newTimerTask, 0L, TIME_MS)
         }
 
     companion object {
@@ -173,25 +170,23 @@ class NotificationService : Service() {
         sendBroadcast(intent)
     }
 
-    private fun sendMessage(message: String) {
+    private fun sendMessage(id: Int, message: String) {
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val channel = NotificationChannel("Reminder", "Notification Service", NotificationManager.IMPORTANCE_DEFAULT)
-        channel.description = "Notifications about meeting"
-        channel.lightColor = Color.BLUE
-        notificationManager.createNotificationChannel(channel)
 
         val notificationBuilder = NotificationCompat.Builder(this, "updates")
-            .setContentTitle(getString(R.string.you_have_a_meeting_with))
-            .setContentText(message)
             .setLargeIcon(BitmapFactory.decodeResource(this.resources, R.drawable.feip))
             .setSmallIcon(R.drawable.baseline_notifications_24)
             .setColor(Color.BLUE)
+            .setPriority(NotificationCompat.PRIORITY_MIN)
+            .setCategory(Notification.CATEGORY_SERVICE)
+            .setContentTitle(getString(R.string.you_have_a_meeting_with))
+            .setContentText(message)
+            .setWhen(GregorianCalendar.getInstance().getTimeInMillis())
+            .setAutoCancel(true)
+            .build()
 
-        val notification = notificationBuilder.build()
-        notificationManager.notify(77, notification)
-
-
+        notificationManager.notify(id, notificationBuilder)
     }
 
 

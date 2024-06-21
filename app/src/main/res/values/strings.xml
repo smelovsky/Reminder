@@ -19,4 +19,5 @@
     <string name="ok">OK</string>
     <string name="you_have_a_meeting_with">You have a meeting with: </string>
     <string name="reminder">Reminder</string>
+    <string name="notification_service_enabled">Notification service enabled</string>
 </resources>
