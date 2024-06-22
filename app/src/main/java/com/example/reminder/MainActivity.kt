@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
                     mainViewModel.showNotification.value = true
                 }
                 "STATUS" -> {
-                    val value = intent.getBooleanExtra("notification_server_enabled", false)
+                    //val value = intent.getBooleanExtra("notification_server_enabled", false)
                 }
 
             }

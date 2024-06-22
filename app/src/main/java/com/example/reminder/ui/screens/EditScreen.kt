@@ -18,7 +18,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -38,9 +37,12 @@ import com.example.reminder.mainViewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.BottomNavigation
+import androidx.compose.material.ButtonColors
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.SubcomposeAsyncImage
@@ -59,10 +61,6 @@ import java.time.format.DateTimeFormatter
 fun EditScreen(navController : NavController) {
 
     val focusManager = LocalFocusManager.current
-
-    LaunchedEffect(Unit) {
-
-    }
 
     androidx.compose.material3.Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -112,7 +110,11 @@ fun EditScreen(navController : NavController) {
                     ) {
 
                         TextButton(
-                            enabled = !mainViewModel.reminderTitle.isEmpty() && !mainViewModel.userName.isEmpty(),
+                            enabled =
+                                !mainViewModel.reminderTitle.isEmpty() &&
+                                !mainViewModel.reminderDate.isEmpty() &&
+                                !mainViewModel.userName.isEmpty(),
+
                             onClick = {
                                 if (mainViewModel.reminderId == -1L) {
                                     mainViewModel.insertReminder(
@@ -138,7 +140,15 @@ fun EditScreen(navController : NavController) {
                                 navController.popBackStack()
                             }
                         ) {
-                            Text(stringResource(id = R.string.save))
+                            Text(
+                                text = stringResource(id = R.string.save),
+                                color =
+                                    if (
+                                        mainViewModel.reminderTitle.isEmpty() ||
+                                        mainViewModel.reminderDate.isEmpty() ||
+                                        mainViewModel.userName.isEmpty()) Color.LightGray
+                                    else Color.Black
+                            )
                         }
                     }
                 }
@@ -196,6 +206,7 @@ fun EditScreen(navController : NavController) {
                 TextField(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clickable { focusManager.clearFocus(true) }
                         .padding(horizontal = 4.dp),
 
                     label = { Text(stringResource(id = R.string.email)) },
@@ -212,11 +223,13 @@ fun EditScreen(navController : NavController) {
 
                 CustomDatePicker(
                     value = mainViewModel.reminderDate,
+                    focusManager = focusManager,
                     onValueChange = { mainViewModel.reminderDate = it }
                 )
 
                 TimePicker(
                     value = mainViewModel.reminderTime,
+                    focusManager = focusManager,
                     onValueChange = {
                         mainViewModel.reminderTime = it
                     }
@@ -224,7 +237,9 @@ fun EditScreen(navController : NavController) {
 
                 Box(modifier = Modifier
                     .fillMaxWidth()
+                    .clickable { focusManager.clearFocus(true) }
                     .padding(horizontal = 4.dp),
+
                 ) {
                     SubcomposeAsyncImage(
                         model = mainViewModel.userPictureLarge,
@@ -247,6 +262,7 @@ fun EditScreen(navController : NavController) {
 @Composable
 fun CustomDatePicker(
     value: String,
+    focusManager: FocusManager,
     onValueChange: (String) -> Unit
 ) {
 
@@ -274,7 +290,8 @@ fun CustomDatePicker(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 4.dp)
-            .clickable { //Click event
+            .clickable {
+                focusManager.clearFocus(true)
                 open.value = true
             },
         enabled = false,// <- Add this to make click event work
@@ -291,6 +308,7 @@ fun CustomDatePicker(
 @Composable
 fun TimePicker(
     value: String,
+    focusManager: FocusManager,
     onValueChange: (String) -> Unit,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
@@ -315,7 +333,10 @@ fun TimePicker(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 4.dp)
-            .clickable { dialog.show() },
+            .clickable {
+                focusManager.clearFocus(true)
+                dialog.show()
+            },
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
         colors = TextFieldDefaults.outlinedTextFieldColors(

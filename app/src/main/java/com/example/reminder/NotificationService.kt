@@ -68,7 +68,7 @@ class NotificationService : Service() {
 
                                     val dif = period.days * 24 * 60 + duration.toMinutes()
 
-                                    if (dif < 60) {
+                                    if (dif < REMINDER_TIME_MIN) {
 
                                         GlobalScope.launch {
                                             mainViewModel.getDbApi().appDao()
@@ -154,11 +154,12 @@ class NotificationService : Service() {
                     action.invoke()
                 }
             }
-            schedule(newTimerTask, 0L, TIME_MS)
+            schedule(newTimerTask, 0L, TIMER_TIME_MS)
         }
 
     companion object {
-        private const val TIME_MS = 20_000L
+        private const val TIMER_TIME_MS = 20_000L
+        private const val REMINDER_TIME_MIN = 60
     }
 
     private fun sendMessageToActivity(notification: String) {
