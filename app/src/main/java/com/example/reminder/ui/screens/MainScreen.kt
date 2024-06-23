@@ -1,6 +1,8 @@
 package com.example.reminder.ui.screens
 
+import android.Manifest
 import android.app.Activity
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -122,15 +124,14 @@ fun MainScreen(
 
                                 navController.navigate("edit")
                             } else {
-                                if (!mainViewModel.getPermissionsApi().hasBasePermissions(activity)) {
+                                if (!mainViewModel.getPermissionsApi().hasBasePermissions(activity)
+                                ) {
                                     mainViewModel.getPermissionsApi().requestBasePermissions(activity)
-                                } else if (!mainViewModel.getPermissionsApi().hasAccessBackgroundLocationPermissions(activity)) {
-                                    mainViewModel.getPermissionsApi().requestAccessBackgroundLocationPermissions(activity)
-                                } else if (!mainViewModel.getPermissionsApi().hasPostNotificationPermissions(activity)) {
+                                } else if (!mainViewModel.getPermissionsApi().hasPostNotificationPermissions(activity)
+                                ) {
                                     mainViewModel.getPermissionsApi().requestPostNotificationPermissions(activity)
                                 }
                             }
-
                         }
                     ) {
                         if (mainViewModel.permissionsViewState.value.permissionsGranted) {
@@ -262,15 +263,21 @@ fun MainScreen(
                         modifier = Modifier.padding(horizontal = 10.dp)
                     )
                     Text(
-                        text = "ACCESS_BACKGROUND_LOCATION",
-                        color = if (mainViewModel.permissionsViewState.value.ACCESS_BACKGROUND_LOCATION) Color.Blue else Color.Red,
-                        modifier = Modifier.padding(horizontal = 10.dp)
-                    )
-                    Text(
                         text = "POST_NOTIFICATIONS",
                         color = if (mainViewModel.permissionsViewState.value.POST_NOTIFICATIONS) Color.Blue else Color.Red,
                         modifier = Modifier.padding(horizontal = 10.dp)
                     )
+                    Text(
+                        text = "FOREGROUND_SERVICE_SPECIAL_USE",
+                        color = if (mainViewModel.permissionsViewState.value.FOREGROUND_SERVICE_SPECIAL_USE) Color.Blue else Color.Red,
+                        modifier = Modifier.padding(horizontal = 10.dp)
+                    )
+                    Text(
+                        text = "FOREGROUND_SERVICE",
+                        color = if (mainViewModel.permissionsViewState.value.FOREGROUND_SERVICE) Color.Blue else Color.Red,
+                        modifier = Modifier.padding(horizontal = 10.dp)
+                    )
+
 
                 }
 

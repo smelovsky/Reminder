@@ -4,26 +4,30 @@ import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
+import android.app.TaskStackBuilder
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.time.Duration
-import java.util.GregorianCalendar
-import java.util.Timer
-import java.util.TimerTask
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Period
 import java.time.format.DateTimeFormatter
+import java.util.GregorianCalendar
+import java.util.Timer
+import java.util.TimerTask
 
 class NotificationService : Service() {
 
@@ -41,6 +45,8 @@ class NotificationService : Service() {
 
         var appRequest: String? = intent.getStringExtra("app_request")
         if (appRequest != null) {
+
+            Log.d("zzz", "appRequest: ${appRequest}")
             when (appRequest) {
                 "start" -> {
                     timer = startTimer() {
@@ -50,6 +56,8 @@ class NotificationService : Service() {
 
                             var showNotification = false
                             var notification = ""
+
+                            Log.d("zzz", "timer: OK")
 
                             reminderList.forEach() {
 
@@ -84,6 +92,8 @@ class NotificationService : Service() {
 
                                 }
                             }
+
+                            Log.d("zzz", "showNotification: ${showNotification}, ${notification}")
 
                             if (showNotification) {
                                 sendMessageToActivity(notification)
@@ -123,8 +133,8 @@ class NotificationService : Service() {
             .setWhen(GregorianCalendar.getInstance().getTimeInMillis())
             .build()
 
-        startForeground(55, notificationBuilder )
-
+        //startForeground(55, notificationBuilder, ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION )
+        startForeground(55, notificationBuilder, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE )
 
         return START_STICKY
     }
@@ -174,20 +184,47 @@ class NotificationService : Service() {
     private fun sendMessage(id: Int, message: String) {
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+/*
+        val channel = NotificationChannel(
+            "Reminder",
+            "Notification Service",
+            NotificationManager.IMPORTANCE_HIGH
+        )
+        notificationManager.createNotificationChannel(channel)
+*/
+        val channelId =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                createNotificationChannel("Reminder", "Notification Service")
+            } else {
+                ""
+            }
 
-        val notificationBuilder = NotificationCompat.Builder(this, "updates")
+        // Create an Intent for the activity you want to start.
+        val resultIntent = Intent(this, MainActivity::class.java)
+        // Create the TaskStackBuilder.
+        val resultPendingIntent: PendingIntent? = TaskStackBuilder.create(this).run {
+            // Add the intent, which inflates the back stack.
+            addNextIntentWithParentStack(resultIntent)
+            // Get the PendingIntent containing the entire back stack.
+            getPendingIntent(0,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        }
+
+        Log.d("zzz", "channelId: ${channelId}")
+        val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setLargeIcon(BitmapFactory.decodeResource(this.resources, R.drawable.feip))
             .setSmallIcon(R.drawable.baseline_notifications_24)
             .setColor(Color.BLUE)
-            .setPriority(NotificationCompat.PRIORITY_MIN)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setCategory(Notification.CATEGORY_SERVICE)
             .setContentTitle(getString(R.string.you_have_a_meeting_with))
             .setContentText(message)
             .setWhen(GregorianCalendar.getInstance().getTimeInMillis())
             .setAutoCancel(true)
+            .setContentIntent(resultPendingIntent)
             .build()
 
-        notificationManager.notify(id, notificationBuilder)
+        notificationManager.notify(55, notificationBuilder)
     }
 
 

@@ -7,7 +7,10 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.ServiceInfo
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -15,6 +18,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material3.Surface
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.core.app.ServiceCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.reminder.ui.navigation.Navigation
 import com.example.reminder.ui.theme.ReminderTheme
@@ -62,8 +66,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         var receiver = NotificationReceiver()
-        registerReceiver(receiver, IntentFilter("REMINDER"))
-        registerReceiver(receiver, IntentFilter("STATUS"))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(receiver, IntentFilter("REMINDER"), RECEIVER_EXPORTED)
+            registerReceiver(receiver, IntentFilter("STATUS"), RECEIVER_EXPORTED)
+        } else {
+            registerReceiver(receiver, IntentFilter("REMINDER"))
+            registerReceiver(receiver, IntentFilter("STATUS"))
+        }
+
 
         setContent {
 
@@ -73,12 +83,15 @@ class MainActivity : ComponentActivity() {
 
             isAppInited = true
 
+            Log.d("zzz", "isAppInited: ${isAppInited}")
+
             if (isFistStart) {
                 if (mainViewModel.getPermissionsApi().hasAllPermissions(this)) {
                     if (!isServiceRunning()) {
                         val intent = Intent(applicationContext, NotificationService::class.java)
                         intent.putExtra("app_request", "start")
                         startForegroundService(intent)
+
                     } else {
                         val intent = Intent(applicationContext, NotificationService::class.java)
                         intent.putExtra("app_request", "status")
@@ -88,7 +101,6 @@ class MainActivity : ComponentActivity() {
                     isFistStart = false
                 }
             }
-
 
             if (mainViewModel.exitFromApp.value) { exitFromApp() }
 
@@ -160,6 +172,11 @@ class MainActivity : ComponentActivity() {
         }.create().show()
     }
 
+
+    override fun onPause() {
+        super.onPause()
+
+    }
 
     override fun onResume() {
         super.onResume()

@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.reminder.mainViewModel
@@ -13,21 +14,20 @@ import com.example.reminder.mainViewModel
 val basePermissions = arrayOf(
     Manifest.permission.INTERNET,
     Manifest.permission.ACCESS_NOTIFICATION_POLICY,
+    Manifest.permission.FOREGROUND_SERVICE_SPECIAL_USE,
+    Manifest.permission.FOREGROUND_SERVICE,
 )
 
 val postNotificationPermissions = arrayOf(
     Manifest.permission.POST_NOTIFICATIONS,
 )
 
-val accessBackgroundLocationPermissions = arrayOf(
-    Manifest.permission.ACCESS_BACKGROUND_LOCATION,
-)
-
 data class PermissionsViewState(
     val INTERNET: Boolean = false,
-    val ACCESS_BACKGROUND_LOCATION: Boolean = false,
     val POST_NOTIFICATIONS: Boolean = false,
     val ACCESS_NOTIFICATION_POLICY: Boolean = false,
+    val FOREGROUND_SERVICE: Boolean = false,
+    val FOREGROUND_SERVICE_SPECIAL_USE: Boolean = false,
 
     val permissionsGranted: Boolean = false,
 )
@@ -45,10 +45,6 @@ class PermissionsImpl(val context: Context): PermissionsApi {
         var result = true
 
         if (!hasBasePermissions(activity)) {
-            result = false
-        }
-
-        if (!hasAccessBackgroundLocationPermissions(activity)) {
             result = false
         }
 
@@ -75,29 +71,12 @@ class PermissionsImpl(val context: Context): PermissionsApi {
 
                 Manifest.permission.INTERNET -> mainViewModel.permissionsViewState.value =
                     mainViewModel.permissionsViewState.value.copy(INTERNET = permission)
-
                 Manifest.permission.ACCESS_NOTIFICATION_POLICY -> mainViewModel.permissionsViewState.value =
                     mainViewModel.permissionsViewState.value.copy(ACCESS_NOTIFICATION_POLICY = permission)
-
-            }
-        }
-
-        return result
-    }
-
-    override fun hasAccessBackgroundLocationPermissions(activity: Activity): Boolean{
-        var result = true
-        accessBackgroundLocationPermissions.forEach {
-
-            val permission = ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
-            if ( !permission)
-            {
-                result = false
-            }
-            when (it) {
-
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION -> mainViewModel.permissionsViewState.value =
-                    mainViewModel.permissionsViewState.value.copy(ACCESS_BACKGROUND_LOCATION = permission)
+                Manifest.permission.FOREGROUND_SERVICE_SPECIAL_USE -> mainViewModel.permissionsViewState.value =
+                    mainViewModel.permissionsViewState.value.copy(FOREGROUND_SERVICE_SPECIAL_USE = permission)
+                Manifest.permission.FOREGROUND_SERVICE -> mainViewModel.permissionsViewState.value =
+                    mainViewModel.permissionsViewState.value.copy(FOREGROUND_SERVICE = permission)
 
             }
         }
@@ -122,7 +101,9 @@ class PermissionsImpl(val context: Context): PermissionsApi {
         return permission
     }
 
+
     override fun requestPostNotificationPermissions(activity: Activity) {
+        Log.d("zzz", "requestPostNotificationPermissions")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.requestPermissions(activity, postNotificationPermissions,101)
         } else {
@@ -133,8 +114,5 @@ class PermissionsImpl(val context: Context): PermissionsApi {
         ActivityCompat.requestPermissions(activity, basePermissions,101)
     }
 
-    override fun requestAccessBackgroundLocationPermissions(activity: Activity) {
-        ActivityCompat.requestPermissions(activity, accessBackgroundLocationPermissions,101)
-    }
 
 }
