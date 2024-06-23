@@ -1,6 +1,9 @@
 package com.example.reminder.ui.screens
 
 import android.app.TimePickerDialog
+import android.os.SystemClock
+import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -43,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.SubcomposeAsyncImage
+import com.example.reminder.ui.navigation.popBackStackSafe
 import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
 import com.maxkeppeler.sheets.calendar.models.CalendarConfig
@@ -52,8 +56,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditScreen(navController : NavController) {
 
@@ -67,8 +69,9 @@ fun EditScreen(navController : NavController) {
                 backgroundColor = androidx.compose.material.MaterialTheme.colors.background,
                 contentColor = androidx.compose.material.MaterialTheme.colors.primary,
                 navigationIcon = {
-                    IconButton(onClick = {
-                        navController.popBackStack()
+                    IconButton(
+                        onClick = {
+                            navController.popBackStackSafe("edit") // W/A with double click
                     }
                     ) {
                         Icon(

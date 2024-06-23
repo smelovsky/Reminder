@@ -21,8 +21,6 @@ class Repository {
             if (response.isSuccessful) {
 
                 val user = response.body()!!.results[0]
-                Log.d("zzz", "${user}")
-
 
                 val userDetails = UserDetails (
                     //id = user.id.value.toInt(),

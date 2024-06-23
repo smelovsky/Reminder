@@ -35,6 +35,7 @@ import androidx.navigation.NavController
 import coil.compose.SubcomposeAsyncImage
 import com.example.reminder.R
 import com.example.reminder.mainViewModel
+import com.example.reminder.ui.navigation.popBackStackSafe
 
 @Composable
 fun UserScreen(
@@ -54,7 +55,7 @@ fun UserScreen(
                 contentColor = MaterialTheme.colors.primary,
                 navigationIcon = {
                     IconButton(onClick = {
-                        navController.popBackStack()
+                        navController.popBackStackSafe("user") // W/A with double click
                     }
                     ) {
                         Icon(

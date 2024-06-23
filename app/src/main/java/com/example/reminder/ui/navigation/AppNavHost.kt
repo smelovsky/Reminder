@@ -1,6 +1,7 @@
 package com.example.reminder.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -30,3 +31,10 @@ fun Navigation(
         }
     }
 }
+
+fun NavController.popBackStackSafe(rote: String) {
+    if (currentDestination?.route == rote) {
+        popBackStack()
+    }
+}
+

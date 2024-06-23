@@ -127,10 +127,12 @@ class NotificationService : Service() {
             .setLargeIcon(BitmapFactory.decodeResource(this.resources, R.drawable.feip))
             .setSmallIcon(R.drawable.baseline_notifications_24)
             .setColor(Color.BLUE)
-            .setPriority(NotificationCompat.PRIORITY_MIN)
             .setCategory(Notification.CATEGORY_SERVICE)
             .setContentText(getString(R.string.notification_service_enabled))
             .setWhen(GregorianCalendar.getInstance().getTimeInMillis())
+            .setPriority(NotificationCompat.PRIORITY_MIN)
+            .setSilent(false)
+
             .build()
 
         //startForeground(55, notificationBuilder, ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION )
@@ -184,14 +186,7 @@ class NotificationService : Service() {
     private fun sendMessage(id: Int, message: String) {
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-/*
-        val channel = NotificationChannel(
-            "Reminder",
-            "Notification Service",
-            NotificationManager.IMPORTANCE_HIGH
-        )
-        notificationManager.createNotificationChannel(channel)
-*/
+
         val channelId =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 createNotificationChannel("Reminder", "Notification Service")
@@ -210,18 +205,19 @@ class NotificationService : Service() {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         }
 
-        Log.d("zzz", "channelId: ${channelId}")
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setLargeIcon(BitmapFactory.decodeResource(this.resources, R.drawable.feip))
             .setSmallIcon(R.drawable.baseline_notifications_24)
             .setColor(Color.BLUE)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(NotificationCompat.PRIORITY_MIN)
             .setCategory(Notification.CATEGORY_SERVICE)
             .setContentTitle(getString(R.string.you_have_a_meeting_with))
             .setContentText(message)
             .setWhen(GregorianCalendar.getInstance().getTimeInMillis())
             .setAutoCancel(true)
             .setContentIntent(resultPendingIntent)
+            .setSilent(false)
+
             .build()
 
         notificationManager.notify(55, notificationBuilder)
