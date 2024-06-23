@@ -102,6 +102,9 @@ class MainViewModel @Inject constructor(
     ) {
 
         GlobalScope.launch {
+
+            appDatabase.appDao().unselectAllReminders()
+
             appDatabase.appDao().insertReminder(ReminderEntity(
                 Title = title,
                 Name = name,
@@ -111,7 +114,8 @@ class MainViewModel @Inject constructor(
                 Date = date,
                 Time = time,
                 isNotified = false,
-                isSelected = false,))
+                isSelected = true,
+                ))
         }
     }
 

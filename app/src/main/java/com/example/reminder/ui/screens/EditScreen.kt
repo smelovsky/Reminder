@@ -40,6 +40,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.SubcomposeAsyncImage
 import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
@@ -112,6 +113,7 @@ fun EditScreen(navController : NavController) {
                                 !mainViewModel.userName.isEmpty(),
 
                             onClick = {
+
                                 if (mainViewModel.reminderId == -1L) {
                                     mainViewModel.insertReminder(
                                         title = mainViewModel.reminderTitle,
@@ -238,6 +240,9 @@ fun EditScreen(navController : NavController) {
 
                 ) {
                     SubcomposeAsyncImage(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        contentScale = ContentScale.FillWidth,
                         model = mainViewModel.userPictureLarge,
                         contentDescription = null,
 
