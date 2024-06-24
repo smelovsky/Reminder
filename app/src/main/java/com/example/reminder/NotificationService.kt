@@ -6,7 +6,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.app.TaskStackBuilder
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
@@ -17,6 +16,7 @@ import android.os.IBinder
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import com.example.reminder.App.Companion.REMINDER_CHANNEL_ID
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.time.Duration
@@ -32,12 +32,11 @@ import java.util.TimerTask
 class NotificationService : Service() {
 
     private var timer: Timer? = null
+    private var notificationId: Int = 0
 
     override fun onBind(intent: Intent): IBinder? {
         throw UnsupportedOperationException("Not yet implemented")
     }
-
-    private var notificationId: Int = 0
 
     @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("ForegroundServiceType")
@@ -46,7 +45,6 @@ class NotificationService : Service() {
         var appRequest: String? = intent.getStringExtra("app_request")
         if (appRequest != null) {
 
-            Log.d("zzz", "appRequest: ${appRequest}")
             when (appRequest) {
                 "start" -> {
                     timer = startTimer() {
@@ -56,8 +54,6 @@ class NotificationService : Service() {
 
                             var showNotification = false
                             var notification = ""
-
-                            Log.d("zzz", "timer: OK")
 
                             reminderList.forEach() {
 
@@ -93,8 +89,6 @@ class NotificationService : Service() {
                                 }
                             }
 
-                            Log.d("zzz", "showNotification: ${showNotification}, ${notification}")
-
                             if (showNotification) {
                                 sendMessageToActivity(notification)
                                 sendMessage(notificationId++, notification)
@@ -113,29 +107,15 @@ class NotificationService : Service() {
 
         }
 
-        val channelId =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                createNotificationChannel("Reminder", "Notification Service")
-            } else {
-                // If earlier version channel ID is not used
-                // https://developer.android.com/reference/android/support/v4/app/NotificationCompat.Builder.html#NotificationCompat.Builder(android.content.Context)
-                ""
-            }
-
-        val notificationBuilder = NotificationCompat.Builder(this, channelId )
+        val notificationBuilder = NotificationCompat.Builder(this, REMINDER_CHANNEL_ID )
             .setOngoing(true)
             .setLargeIcon(BitmapFactory.decodeResource(this.resources, R.drawable.feip))
             .setSmallIcon(R.drawable.baseline_notifications_24)
             .setColor(Color.BLUE)
-            .setCategory(Notification.CATEGORY_SERVICE)
             .setContentText(getString(R.string.notification_service_enabled))
-            .setWhen(GregorianCalendar.getInstance().getTimeInMillis())
-            .setPriority(NotificationCompat.PRIORITY_MIN)
-            .setSilent(false)
-
+            .setAutoCancel(true)
             .build()
 
-        //startForeground(55, notificationBuilder, ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION )
         startForeground(55, notificationBuilder, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE )
 
         return START_STICKY
@@ -185,42 +165,29 @@ class NotificationService : Service() {
 
     private fun sendMessage(id: Int, message: String) {
 
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val activityIntent = Intent(this, MainActivity::class.java)
+        val activityPendingIntent = PendingIntent.getActivity(
+            this,
+            1,
+            activityIntent,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
+        )
 
-        val channelId =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                createNotificationChannel("Reminder", "Notification Service")
-            } else {
-                ""
-            }
-
-        // Create an Intent for the activity you want to start.
-        val resultIntent = Intent(this, MainActivity::class.java)
-        // Create the TaskStackBuilder.
-        val resultPendingIntent: PendingIntent? = TaskStackBuilder.create(this).run {
-            // Add the intent, which inflates the back stack.
-            addNextIntentWithParentStack(resultIntent)
-            // Get the PendingIntent containing the entire back stack.
-            getPendingIntent(0,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        }
-
-        val notificationBuilder = NotificationCompat.Builder(this, channelId)
+        val notificationBuilder = NotificationCompat.Builder(this, REMINDER_CHANNEL_ID)
             .setLargeIcon(BitmapFactory.decodeResource(this.resources, R.drawable.feip))
             .setSmallIcon(R.drawable.baseline_notifications_24)
             .setColor(Color.BLUE)
-            .setPriority(NotificationCompat.PRIORITY_MIN)
-            .setCategory(Notification.CATEGORY_SERVICE)
             .setContentTitle(getString(R.string.you_have_a_meeting_with))
             .setContentText(message)
-            .setWhen(GregorianCalendar.getInstance().getTimeInMillis())
             .setAutoCancel(true)
-            .setContentIntent(resultPendingIntent)
-            .setSilent(false)
-
+            .setContentIntent(activityPendingIntent)
             .build()
 
-        notificationManager.notify(55, notificationBuilder)
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(
+            notificationId,
+            notificationBuilder
+        )
     }
 
 
