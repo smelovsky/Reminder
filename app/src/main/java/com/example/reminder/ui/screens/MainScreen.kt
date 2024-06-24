@@ -2,6 +2,7 @@ package com.example.reminder.ui.screens
 
 import android.Manifest
 import android.app.Activity
+import android.os.Build
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -267,11 +268,14 @@ fun MainScreen(
                         color = if (mainViewModel.permissionsViewState.value.POST_NOTIFICATIONS) Color.Blue else Color.Red,
                         modifier = Modifier.padding(horizontal = 10.dp)
                     )
-                    Text(
-                        text = "FOREGROUND_SERVICE_SPECIAL_USE",
-                        color = if (mainViewModel.permissionsViewState.value.FOREGROUND_SERVICE_SPECIAL_USE) Color.Blue else Color.Red,
-                        modifier = Modifier.padding(horizontal = 10.dp)
-                    )
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                        Text(
+                            text = "FOREGROUND_SERVICE_SPECIAL_USE",
+                            color = if (mainViewModel.permissionsViewState.value.FOREGROUND_SERVICE_SPECIAL_USE) Color.Blue else Color.Red,
+                            modifier = Modifier.padding(horizontal = 10.dp)
+                        )
+                    }
+
                     Text(
                         text = "FOREGROUND_SERVICE",
                         color = if (mainViewModel.permissionsViewState.value.FOREGROUND_SERVICE) Color.Blue else Color.Red,

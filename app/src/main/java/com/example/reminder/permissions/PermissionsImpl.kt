@@ -11,10 +11,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.reminder.mainViewModel
 
-val basePermissions = arrayOf(
+var basePermissions = arrayOf(
     Manifest.permission.INTERNET,
     Manifest.permission.ACCESS_NOTIFICATION_POLICY,
-    Manifest.permission.FOREGROUND_SERVICE_SPECIAL_USE,
     Manifest.permission.FOREGROUND_SERVICE,
 )
 
@@ -33,6 +32,17 @@ data class PermissionsViewState(
 )
 
 class PermissionsImpl(val context: Context): PermissionsApi {
+
+    init {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            basePermissions = arrayOf(
+                Manifest.permission.INTERNET,
+                Manifest.permission.ACCESS_NOTIFICATION_POLICY,
+                Manifest.permission.FOREGROUND_SERVICE_SPECIAL_USE,
+                Manifest.permission.FOREGROUND_SERVICE,
+            )
+        }
+    }
 
     private fun Context.findActivity(): Activity? = when (this) {
         is Activity -> this
