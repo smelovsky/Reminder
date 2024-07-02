@@ -1,16 +1,20 @@
 package com.example.reminder
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.reminder.data.database.AppDatabase
+import com.example.reminder.data.database.dao.AppDao
 import com.example.reminder.data.database.model.ReminderEntity
-import com.example.reminder.data.restapi.repository.Repository
+//import com.example.reminder.data.restapi.repository.Repository
+import com.example.reminder.data.restapi.repository.RestapiRepositoryApi
 import com.example.reminder.permissions.PermissionsApi
 import com.example.reminder.permissions.PermissionsViewState
+import com.example.reminder.util.getRemindertime
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.GlobalScope
@@ -30,13 +34,9 @@ data class UserDetails(
 class MainViewModel @Inject constructor(
     private val permissionsApi: PermissionsApi,
     private val appDatabase: AppDatabase,
+    private val restapiRepositoryApi: RestapiRepositoryApi,
     @ApplicationContext val context: Context,
     ) : ViewModel() {
-
-    val exitFromApp = mutableStateOf(false)
-
-    val showNotification = mutableStateOf(false)
-    var notification = ""
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Permissions
@@ -47,15 +47,14 @@ class MainViewModel @Inject constructor(
         return permissionsApi
     }
 
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // RANDOM USER GENERATOR
     var userListEntity by mutableStateOf(listOf<UserDetails>())
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // DB
+    //
+
     var reminderListEntity by mutableStateOf(listOf<ReminderEntity>())
-    var reminderListEntityByTime by mutableStateOf(listOf<ReminderEntity>())
 
     var reminderId = 0L
     var reminderTitle by mutableStateOf("")
@@ -67,21 +66,23 @@ class MainViewModel @Inject constructor(
     var userPictureLarge by mutableStateOf("")
     var userPictureThumbnail by mutableStateOf("")
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // DB
 
-    fun getDbApi (): AppDatabase {
-        return appDatabase
+    fun getAppDao (): AppDao {
+        return appDatabase.appDao()
     }
 
     fun getReminderList () {
         GlobalScope.launch {
-            reminderListEntity = appDatabase.appDao().getReminderList()
+            reminderListEntity = getAppDao().getReminderList()
         }
     }
 
     fun reminderUnselectAllItems() {
         GlobalScope.launch {
             appDatabase.appDao().unselectAllReminders()
-            reminderListEntity = appDatabase.appDao().getReminderList()
+            reminderListEntity = getAppDao().getReminderList()
         }
     }
 
@@ -89,66 +90,66 @@ class MainViewModel @Inject constructor(
         GlobalScope.launch {
             appDatabase.appDao().unselectAllReminders()
             appDatabase.appDao().selectReminderById(Id = id, isSelected = isSelected)
-            reminderListEntity = appDatabase.appDao().getReminderList()
+            reminderListEntity = getAppDao().getReminderList()
         }
     }
 
-    fun insertReminder (
-        title: String,
-        name: String,
-        email: String,
-        date: String,
-        time: String,
-    ) {
+    fun insertReminder ( reminderEntity: ReminderEntity) {
 
         GlobalScope.launch {
 
             appDatabase.appDao().unselectAllReminders()
 
-            appDatabase.appDao().insertReminder(ReminderEntity(
-                Title = title,
-                Name = name,
-                PictureLarge = userPictureLarge,
-                PictureThumbnail = userPictureThumbnail,
-                Email = email,
-                Date = date,
-                Time = time,
-                isNotified = false,
-                isSelected = true,
-                ))
+            val reminderTime = getRemindertime(reminderEntity.Date, reminderEntity.Time)
+
+            val id = getAppDao().insertReminder(reminderEntity)
+
+            val alarm = Alarm(
+                id = id,
+                name = reminderEntity.Name,
+                reminderTime = reminderTime,
+                meetingDate = reminderEntity.Date,
+                meetingTime = reminderEntity.Time)
+
+            val newAlarmId = alarm.hashCode()
+
+            reminderEntity.AlarmId = newAlarmId
+            reminderEntity.Id = id
+
+            appDatabase.appDao().updateReminder(reminderEntity)
+
+            mainViewModel.scheduleReminder(alarm = alarm, oldAlarmId = 0, newAlarmId = newAlarmId)
         }
     }
 
-    fun updateReminder (
-        id: Long,
-        title: String,
-        name: String,
-        email: String,
-        date: String,
-        time: String,
-        isNotified: Boolean,
-        isSelected: Boolean
-    ) {
+    fun updateReminder ( reminderEntity: ReminderEntity ) {
+
+        val reminderTime = getRemindertime( reminderEntity.Date, reminderEntity.Time)
+
+        val alarm = Alarm(
+            id = reminderEntity.Id,
+            name = reminderEntity.Name,
+            reminderTime = reminderTime,
+            meetingDate = reminderEntity.Date,
+            meetingTime = reminderEntity.Time)
+
+        val oldAlarmId = reminderEntity.AlarmId
+        val newAlarmId = alarm.hashCode()
+
+        reminderEntity.AlarmId = newAlarmId
 
         GlobalScope.launch {
-            appDatabase.appDao().updateReminder(ReminderEntity(
-                Id = id,
-                Title = title,
-                Name = name,
-                PictureLarge = userPictureLarge,
-                PictureThumbnail = userPictureThumbnail,
-                Email = email,
-                Date = date,
-                Time = time,
-                isNotified = isNotified,
-                isSelected = isSelected,))
+            getAppDao().updateReminder(reminderEntity)
+
+            mainViewModel.scheduleReminder(alarm = alarm, oldAlarmId = oldAlarmId, newAlarmId = newAlarmId)
+
         }
     }
 
     fun reminderDeleteSelectedItems() {
 
         GlobalScope.launch {
-            appDatabase.appDao().deleteSelectedReminders()
+            getAppDao().deleteSelectedReminders()
             reminderListEntity = appDatabase.appDao().getReminderList()
         }
 
@@ -156,16 +157,29 @@ class MainViewModel @Inject constructor(
 
     fun getRandomUser() {
 
-        val repository = Repository()
-
         viewModelScope.launch {
             userListEntity = listOf()
             for (i in 1..15) {
-                repository.getRandomUser()
+                mainViewModel.userListEntity += restapiRepositoryApi.getRandomUser(i)
             }
-
         }
 
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+
+    fun scheduleReminder(alarm: Alarm, oldAlarmId: Int, newAlarmId: Int) {
+        viewModelScope.launch {
+
+            val service = ReminderNotificationService(context)
+
+            service.scheduleNotification(
+                alarm = alarm,
+                oldAlarmId = oldAlarmId,
+                newAlarmId = newAlarmId,
+            )
+        }
     }
 
 }

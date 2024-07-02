@@ -10,7 +10,10 @@ import androidx.room.PrimaryKey
 data class ReminderEntity(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    val Id: Long = 0,
+    var Id: Long = 0,
+
+    @ColumnInfo(name = "alarm_id")
+    var AlarmId: Int = 0,
 
     @ColumnInfo(name = "title")
     val Title: String,

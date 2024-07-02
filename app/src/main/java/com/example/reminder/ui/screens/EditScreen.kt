@@ -40,12 +40,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.icons.outlined.ExitToApp
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.room.ColumnInfo
 import coil.compose.SubcomposeAsyncImage
+import com.example.reminder.data.database.model.ReminderEntity
 import com.example.reminder.ui.navigation.popBackStackSafe
 import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
@@ -57,7 +61,9 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun EditScreen(navController : NavController) {
+fun EditScreen(
+    navController : NavController,
+    ) {
 
     val focusManager = LocalFocusManager.current
 
@@ -72,7 +78,7 @@ fun EditScreen(navController : NavController) {
                     IconButton(
                         onClick = {
                             navController.popBackStackSafe("edit") // W/A with double click
-                    }
+                        }
                     ) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
@@ -87,6 +93,7 @@ fun EditScreen(navController : NavController) {
                         Text(stringResource(id = R.string.edit_screen_title))
                 },
             )
+
         },
         bottomBar = {
 
@@ -115,30 +122,46 @@ fun EditScreen(navController : NavController) {
                                 !mainViewModel.reminderDate.isEmpty() &&
                                 !mainViewModel.userName.isEmpty(),
 
+                            modifier = Modifier.fillMaxWidth(),
+
                             onClick = {
 
                                 if (mainViewModel.reminderId == -1L) {
-                                    mainViewModel.insertReminder(
-                                        title = mainViewModel.reminderTitle,
-                                        name = mainViewModel.userName,
-                                        email = mainViewModel.userEmail,
-                                        date = mainViewModel.reminderDate.toString(),
-                                        time = mainViewModel.reminderTime.toString(),
-                                    )
-                                } else {
-                                    mainViewModel.updateReminder(
-                                        id = mainViewModel.reminderId,
-                                        title = mainViewModel.reminderTitle,
-                                        name = mainViewModel.userName,
-                                        email = mainViewModel.userEmail,
-                                        date = mainViewModel.reminderDate.toString(),
-                                        time = mainViewModel.reminderTime.toString(),
+                                    val reminderEntity  = ReminderEntity (
+                                        Id = 0,
+                                        AlarmId = 0,
+                                        Title = mainViewModel.reminderTitle,
+                                        Name = mainViewModel.userName,
+                                        Email = mainViewModel.userEmail,
+                                        PictureLarge = mainViewModel.userPictureLarge,
+                                        PictureThumbnail = mainViewModel.userPictureThumbnail,
+                                        Date = mainViewModel.reminderDate,
+                                        Time = mainViewModel.reminderTime,
+                                        isSelected = false,
                                         isNotified = false,
-                                        isSelected = true,
                                     )
+                                    mainViewModel.insertReminder( reminderEntity)
+                                } else {
+
+                                    val reminderEntity  = ReminderEntity (
+                                        Id = mainViewModel.reminderId,
+                                        AlarmId = 0,
+                                        Title = mainViewModel.reminderTitle,
+                                        Name = mainViewModel.userName,
+                                        Email = mainViewModel.userEmail,
+                                        PictureLarge = mainViewModel.userPictureLarge,
+                                        PictureThumbnail = mainViewModel.userPictureThumbnail,
+                                        Date = mainViewModel.reminderDate,
+                                        Time = mainViewModel.reminderTime,
+                                        isSelected = true,
+                                        isNotified = false,
+                                    )
+
+                                    mainViewModel.updateReminder( reminderEntity)
                                 }
 
-                                navController.popBackStack()
+                                navController.popBackStackSafe("edit") // W/A with double click
+
                             }
                         ) {
                             Text(
@@ -267,12 +290,14 @@ fun EditScreen(navController : NavController) {
 fun CustomDatePicker(
     value: String,
     focusManager: FocusManager,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
+    pattern: String = "yyyy-MM-dd",
 ) {
 
     val open = remember { mutableStateOf(false)}
 
-    var date =  LocalDate.now()
+    val formatter = DateTimeFormatter.ofPattern(pattern)
+    var date = if (value.isNotBlank()) LocalDate.parse(value, formatter) else LocalDate.now()
 
     if (open.value) {
         CalendarDialog(
@@ -321,6 +346,7 @@ fun TimePicker(
 ) {
     val formatter = DateTimeFormatter.ofPattern(pattern)
     val time = if (value.isNotBlank()) LocalTime.parse(value, formatter) else LocalTime.now()
+
     val dialog = TimePickerDialog(
         LocalContext.current,
         { _, hour, minute -> onValueChange(LocalTime.of(hour, minute).toString()) },

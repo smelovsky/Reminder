@@ -20,6 +20,9 @@ interface AppDao {
     @Query(value = "SELECT * FROM reminders")
     fun getReminderList(): List<ReminderEntity>
 
+    @Query(value = "SELECT * FROM reminders WHERE id = :reminderId ")
+    fun getReminderById(reminderId: Long): ReminderEntity
+
     @Query(value = "SELECT * FROM reminders")
     fun getReminderListByTime(): List<ReminderEntity>
 

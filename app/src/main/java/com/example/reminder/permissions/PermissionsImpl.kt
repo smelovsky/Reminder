@@ -14,7 +14,7 @@ import com.example.reminder.mainViewModel
 var basePermissions = arrayOf(
     Manifest.permission.INTERNET,
     Manifest.permission.ACCESS_NOTIFICATION_POLICY,
-    Manifest.permission.FOREGROUND_SERVICE,
+    Manifest.permission.SCHEDULE_EXACT_ALARM,
 )
 
 val postNotificationPermissions = arrayOf(
@@ -25,24 +25,12 @@ data class PermissionsViewState(
     val INTERNET: Boolean = false,
     val POST_NOTIFICATIONS: Boolean = false,
     val ACCESS_NOTIFICATION_POLICY: Boolean = false,
-    val FOREGROUND_SERVICE: Boolean = false,
-    val FOREGROUND_SERVICE_SPECIAL_USE: Boolean = false,
+    val SCHEDULE_EXACT_ALARM: Boolean = false,
 
     val permissionsGranted: Boolean = false,
 )
 
 class PermissionsImpl(val context: Context): PermissionsApi {
-
-    init {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            basePermissions = arrayOf(
-                Manifest.permission.INTERNET,
-                Manifest.permission.ACCESS_NOTIFICATION_POLICY,
-                Manifest.permission.FOREGROUND_SERVICE_SPECIAL_USE,
-                Manifest.permission.FOREGROUND_SERVICE,
-            )
-        }
-    }
 
     private fun Context.findActivity(): Activity? = when (this) {
         is Activity -> this
@@ -83,10 +71,8 @@ class PermissionsImpl(val context: Context): PermissionsApi {
                     mainViewModel.permissionsViewState.value.copy(INTERNET = permission)
                 Manifest.permission.ACCESS_NOTIFICATION_POLICY -> mainViewModel.permissionsViewState.value =
                     mainViewModel.permissionsViewState.value.copy(ACCESS_NOTIFICATION_POLICY = permission)
-                Manifest.permission.FOREGROUND_SERVICE_SPECIAL_USE -> mainViewModel.permissionsViewState.value =
-                    mainViewModel.permissionsViewState.value.copy(FOREGROUND_SERVICE_SPECIAL_USE = permission)
-                Manifest.permission.FOREGROUND_SERVICE -> mainViewModel.permissionsViewState.value =
-                    mainViewModel.permissionsViewState.value.copy(FOREGROUND_SERVICE = permission)
+                Manifest.permission.SCHEDULE_EXACT_ALARM -> mainViewModel.permissionsViewState.value =
+                    mainViewModel.permissionsViewState.value.copy(SCHEDULE_EXACT_ALARM = permission)
 
             }
         }
@@ -113,7 +99,6 @@ class PermissionsImpl(val context: Context): PermissionsApi {
 
 
     override fun requestPostNotificationPermissions(activity: Activity) {
-        Log.d("zzz", "requestPostNotificationPermissions")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.requestPermissions(activity, postNotificationPermissions,101)
         } else {

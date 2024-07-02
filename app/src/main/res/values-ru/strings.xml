@@ -3,10 +3,11 @@
     <string name="edit_screen_title">Режим редактирования</string>
     <string name="new_screen_title">Режим редактирования (новая запись)</string>
     <string name="user_screen_title">Список клиентов</string>
+    <string name="permissions_screen_title">Разрешения</string>
     <string name="do_you_really_want_to_close_the_application">Выйти из приложения?</string>
     <string name="yes">Да</string>
     <string name="no">Нет</string>
-    <string name="save">Сохранить</string>
+    <string name="save">Сохранить и выйти</string>
     <string name="title">Наименование*</string>
     <string name="user">Клиент*</string>
     <string name="email">Эл. почта*</string>
@@ -14,10 +15,13 @@
     <string name="date">Дата*</string>
     <string name="time">Время</string>
     <string name="add_new_reminder">Добавить новое напоминание</string>
-    <string name="permissions">Разрешения</string>
+    <string name="permissions">Предоставить</string>
     <string name="continue_working_in_background">Продолжить работать в бэкграунде?</string>
     <string name="ok">Понятно</string>
     <string name="you_have_a_meeting_with">У Вас запланирована встреча с: </string>
     <string name="reminder">Напоминание</string>
     <string name="notification_service_enabled">Сервис для нотификаций активирован</string>
+    <string name="remind_5_min_before_meeting">Напомнить за 5 мин. до встречи</string>
+    <string name="show_reminder">Показать напоминание</string>
+    <string name="show_all_reminders">Показать все напоминания</string>
 </resources>

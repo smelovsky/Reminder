@@ -5,6 +5,8 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import androidx.core.app.NotificationChannelCompat
+import androidx.core.app.NotificationManagerCompat
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
@@ -12,21 +14,23 @@ class App: Application() {
 
     override fun onCreate() {
         super.onCreate()
+
         createNotificationChannel()
     }
 
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                REMINDER_CHANNEL_ID,
-                getString(R.string.reminder),
-                NotificationManager.IMPORTANCE_HIGH
-            )
-            channel.description = getString(R.string.notification_service_enabled)
 
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
+        val notificationManager = NotificationManagerCompat.from(this)
+
+        val channel = NotificationChannelCompat.Builder(
+            REMINDER_CHANNEL_ID,
+            NotificationManagerCompat.IMPORTANCE_HIGH
+        )
+        .setName(getString(R.string.reminder))
+        .setDescription(getString(R.string.notification_service_enabled))
+        .build()
+
+        notificationManager.createNotificationChannel(channel)
     }
 
     companion object {

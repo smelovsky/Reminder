@@ -1,16 +1,11 @@
 package com.example.reminder.ui.screens
 
-import android.Manifest
-import android.app.Activity
-import android.os.Build
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -41,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -58,11 +52,13 @@ import com.example.reminder.mainViewModel
 @Composable
 fun MainScreen(
    navController : NavController,
-   navigateBack: () -> Unit,) {
+   navigateBack: () -> Unit,
+   onExitPressed: () -> Unit,
+   ) {
 
-    val activity = (LocalContext.current as Activity)
-
-    BackHandler(onBack = navigateBack)
+    BackHandler(onBack = {
+        navigateBack()
+    })
 
     LaunchedEffect(Unit) {
         mainViewModel.getReminderList()
@@ -78,10 +74,10 @@ fun MainScreen(
                 title = {
                     Text(stringResource(id = R.string.app_name))
                 },
-                elevation = 0.dp,
+                //elevation = 0.dp,
                 actions = {
                     androidx.compose.material.IconButton(onClick = {
-                        mainViewModel.exitFromApp.value = true
+                        onExitPressed()
                     }) {
                         androidx.compose.material.Icon(
                             Icons.Outlined.ExitToApp,
@@ -111,35 +107,23 @@ fun MainScreen(
 
                     TextButton(
 
+                        modifier = Modifier.fillMaxWidth(),
                         onClick = {
 
-                            if (mainViewModel.permissionsViewState.value.permissionsGranted) {
-                                mainViewModel.reminderId = -1L
-                                mainViewModel.reminderTitle = ""
-                                mainViewModel.reminderDate = ""
-                                mainViewModel.reminderTime = ""
-                                mainViewModel.userName = ""
-                                mainViewModel.userEmail = ""
-                                mainViewModel.userPictureLarge = ""
-                                mainViewModel.userPictureThumbnail = ""
+                            mainViewModel.reminderId = -1L
+                            //mainViewModel.oldAlarmId = 0
+                            mainViewModel.reminderTitle = ""
+                            mainViewModel.reminderDate = ""
+                            mainViewModel.reminderTime = ""
+                            mainViewModel.userName = ""
+                            mainViewModel.userEmail = ""
+                            mainViewModel.userPictureLarge = ""
+                            mainViewModel.userPictureThumbnail = ""
 
-                                navController.navigate("edit")
-                            } else {
-                                if (!mainViewModel.getPermissionsApi().hasBasePermissions(activity)
-                                ) {
-                                    mainViewModel.getPermissionsApi().requestBasePermissions(activity)
-                                } else if (!mainViewModel.getPermissionsApi().hasPostNotificationPermissions(activity)
-                                ) {
-                                    mainViewModel.getPermissionsApi().requestPostNotificationPermissions(activity)
-                                }
-                            }
+                            navController.navigate("edit")
                         }
                     ) {
-                        if (mainViewModel.permissionsViewState.value.permissionsGranted) {
-                            Text(stringResource(R.string.add_new_reminder))
-                        } else {
-                            Text(stringResource(R.string.permissions))
-                        }
+                        Text(stringResource(R.string.add_new_reminder))
 
                     }
                 }
@@ -151,142 +135,70 @@ fun MainScreen(
             val lazyListState: LazyListState = rememberLazyListState()
             val showAlertDialog = remember { mutableStateOf(false) }
 
-            if (mainViewModel.permissionsViewState.value.permissionsGranted) {
-                Box(
-                    modifier = Modifier
-                        .padding(padding)
-                        .fillMaxSize()
-                        .background(Color.Transparent),
-                ) {
+            Box(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+                    .background(Color.Transparent),
+            ) {
 
-                    if (mainViewModel.showNotification.value) {
-
-                        val body = "${stringResource(R.string.you_have_a_meeting_with)} ${mainViewModel.notification}"
-
-                        AlertDialog(
-                            onDismissRequest = {  },
-                            title = {
-                                Row() {
-                                    Icon(
-                                        painterResource(R.drawable.feip),
-                                        contentDescription = "AlertDialog",
-                                        tint = Color.Unspecified,
-                                        modifier = Modifier.size(30.dp)
-                                    )
-                                    Spacer(modifier = Modifier.size(10.dp))
-                                    androidx.compose.material.Text(stringResource(R.string.app_name), fontSize = 22.sp)
-                                }
-
-                            },
-
-                            text = { androidx.compose.material.Text(body, fontSize = 16.sp) },
-                            confirmButton = {
-                                TextButton(
-                                    onClick = {
-                                        mainViewModel.showNotification.value = false
-                                    }
-                                ) {
-                                    androidx.compose.material.Text(stringResource(R.string.ok))
-                                }
-                            },
-                        )
-
-                    }
-                    if (showAlertDialog.value) {
-                        AlertDialog(
-                            onDismissRequest = {  },
-                            title = {
-                                Row() {
-                                    Icon(
-                                        painterResource(R.drawable.feip),
-                                        contentDescription = "AlertDialog",
-                                        tint = Color.Unspecified,
-                                        modifier = Modifier.size(30.dp)
-                                    )
-                                    Spacer(modifier = Modifier.size(10.dp))
-                                    androidx.compose.material.Text(stringResource(R.string.app_name), fontSize = 22.sp)
-                                }
-
-                            },
-                            text = { androidx.compose.material.Text(stringResource(R.string.would_you_like_to_delete_selected_reminder), fontSize = 16.sp) },
-                            confirmButton = {
-                                TextButton(
-                                    onClick = {
-                                        mainViewModel.reminderDeleteSelectedItems()
-                                        showAlertDialog.value = false
-                                    }
-                                ) {
-                                    androidx.compose.material.Text(stringResource(R.string.yes))
-                                }
-                            },
-                            dismissButton = {
-                                TextButton(
-                                    onClick = { showAlertDialog.value = false }
-                                ) {
-                                    androidx.compose.material.Text(stringResource(R.string.no))
-                                }
+                if (showAlertDialog.value) {
+                    AlertDialog(
+                        onDismissRequest = {  },
+                        title = {
+                            Row() {
+                                Icon(
+                                    painterResource(R.drawable.feip),
+                                    contentDescription = "AlertDialog",
+                                    tint = Color.Unspecified,
+                                    modifier = Modifier.size(30.dp)
+                                )
+                                Spacer(modifier = Modifier.size(10.dp))
+                                androidx.compose.material.Text(stringResource(R.string.app_name), fontSize = 22.sp)
                             }
-                        )
-                    }
 
-                    LazyColumn (
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(0.99f),
-                        state = lazyListState,
-                    ) {
-                        itemsIndexed(
-                            items = mainViewModel.reminderListEntity,
-                            key = { _, reminderItem -> reminderItem.Id })
-                        { index, _ ->
-
-                            ReminderItemBlock(
-                                index = index,
-                                navController = navController,
-                                { showAlertDialog.value = true },
-                            )
-
+                        },
+                        text = { androidx.compose.material.Text(stringResource(R.string.would_you_like_to_delete_selected_reminder), fontSize = 16.sp) },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    mainViewModel.reminderDeleteSelectedItems()
+                                    showAlertDialog.value = false
+                                }
+                            ) {
+                                androidx.compose.material.Text(stringResource(R.string.yes))
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = { showAlertDialog.value = false }
+                            ) {
+                                androidx.compose.material.Text(stringResource(R.string.no))
+                            }
                         }
-                    }
+                    )
                 }
-            } else {
-                Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-                    Spacer(modifier = Modifier.height(10.dp))
 
-                    Text(
-                        text = "INTERNET",
-                        color = if (mainViewModel.permissionsViewState.value.INTERNET) Color.Blue else Color.Red,
-                        modifier = Modifier.padding(horizontal = 10.dp)
-                    )
-                    Text(
-                        text = "ACCESS_NOTIFICATION_POLICY",
-                        color = if (mainViewModel.permissionsViewState.value.ACCESS_NOTIFICATION_POLICY) Color.Blue else Color.Red,
-                        modifier = Modifier.padding(horizontal = 10.dp)
-                    )
-                    Text(
-                        text = "POST_NOTIFICATIONS",
-                        color = if (mainViewModel.permissionsViewState.value.POST_NOTIFICATIONS) Color.Blue else Color.Red,
-                        modifier = Modifier.padding(horizontal = 10.dp)
-                    )
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                        Text(
-                            text = "FOREGROUND_SERVICE_SPECIAL_USE",
-                            color = if (mainViewModel.permissionsViewState.value.FOREGROUND_SERVICE_SPECIAL_USE) Color.Blue else Color.Red,
-                            modifier = Modifier.padding(horizontal = 10.dp)
+                LazyColumn (
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(0.99f),
+                    state = lazyListState,
+                ) {
+                    itemsIndexed(
+                        items = mainViewModel.reminderListEntity,
+                        key = { _, reminderItem -> reminderItem.Id })
+                    { index, _ ->
+
+                        ReminderItemBlock(
+                            index = index,
+                            navController = navController,
+                            { showAlertDialog.value = true },
                         )
+
                     }
-
-                    Text(
-                        text = "FOREGROUND_SERVICE",
-                        color = if (mainViewModel.permissionsViewState.value.FOREGROUND_SERVICE) Color.Blue else Color.Red,
-                        modifier = Modifier.padding(horizontal = 10.dp)
-                    )
-
-
                 }
-
             }
-
 
         }
     )
@@ -302,10 +214,10 @@ fun ReminderItemBlock(
 
 ) {
 
-    val details = mainViewModel.reminderListEntity[index]
+    val reminder = mainViewModel.reminderListEntity[index]
 
-    val picture = details.PictureLarge
-    val isSelected = details.isSelected
+    val picture = reminder.PictureLarge
+    val isSelected = reminder.isSelected
 
     ConstraintLayout(
         modifier = Modifier
@@ -314,10 +226,10 @@ fun ReminderItemBlock(
             .combinedClickable(
 
                 onClick = {
-                    if (details.isSelected) {
+                    if (reminder.isSelected) {
                         mainViewModel.reminderUnselectAllItems()
                     } else {
-                        mainViewModel.reminderSelectItem(id = details.Id, isSelected = true)
+                        mainViewModel.reminderSelectItem(id = reminder.Id, isSelected = true)
                     }
 
                 },
@@ -382,7 +294,7 @@ fun ReminderItemBlock(
         }
 
         Text(
-            text = "${details.Title}",
+            text = "${reminder.Title}",
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
@@ -394,7 +306,7 @@ fun ReminderItemBlock(
                 }
         )
         Text(
-            text = "${details.Name}, ${details.Email}",
+            text = "${reminder.Name}, ${reminder.Email}",
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
@@ -406,7 +318,7 @@ fun ReminderItemBlock(
                 }
         )
         Text(
-            text = "${details.Date}, ${details.Time}",
+            text = "${reminder.Date}, ${reminder.Time}",
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
@@ -438,14 +350,14 @@ fun ReminderItemBlock(
             IconButton(
                 onClick = {
 
-                    mainViewModel.reminderId = details.Id
-                    mainViewModel.reminderTitle = details.Title
-                    mainViewModel.reminderDate = details.Date
-                    mainViewModel.reminderTime = details.Time
-                    mainViewModel.userName = details.Name
-                    mainViewModel.userEmail = details.Email
-                    mainViewModel.userPictureLarge = details.PictureLarge
-                    mainViewModel.userPictureThumbnail = details.PictureThumbnail
+                    mainViewModel.reminderId = reminder.Id
+                    mainViewModel.reminderTitle = reminder.Title
+                    mainViewModel.reminderDate = reminder.Date
+                    mainViewModel.reminderTime = reminder.Time
+                    mainViewModel.userName = reminder.Name
+                    mainViewModel.userEmail = reminder.Email
+                    mainViewModel.userPictureLarge = reminder.PictureLarge
+                    mainViewModel.userPictureThumbnail = reminder.PictureThumbnail
 
                     navController.navigate("edit")
                 },

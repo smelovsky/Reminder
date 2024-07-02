@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Room
 import com.example.reminder.data.database.AppDatabase
 import com.example.reminder.data.database.dao.AppDao
+import com.example.reminder.data.restapi.repository.RestapiRepositoryApi
+import com.example.reminder.data.restapi.repository.RestapiRepositoryImpl
 import com.example.reminder.permissions.PermissionsApi
 import com.example.reminder.permissions.PermissionsImpl
 import dagger.Module
@@ -37,6 +39,11 @@ object DatabaseModule {
     @Provides
     fun provideAppDao(database: AppDatabase): AppDao {
         return database.appDao()
+    }
+
+    @Provides
+    fun provideRestapiRepository(): RestapiRepositoryApi {
+        return RestapiRepositoryImpl()
     }
 
 }
