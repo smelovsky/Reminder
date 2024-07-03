@@ -24,4 +24,5 @@
     <string name="remind_5_min_before_meeting">Напомнить за 5 мин. до встречи</string>
     <string name="show_reminder">Показать напоминание</string>
     <string name="show_all_reminders">Показать все напоминания</string>
+    <string name="reminder_not_found">Напоминание не найдено</string>
 </resources>

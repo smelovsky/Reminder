@@ -18,7 +18,7 @@ class ShowViewModel @Inject constructor(
 ) : ViewModel() {
 
 
-    var reminderId = 0L
+    var reminderId by mutableStateOf(-1L)
     var reminderTitle by mutableStateOf("")
     var reminderDate by mutableStateOf("")
     var reminderTime by mutableStateOf("")
@@ -40,16 +40,29 @@ class ShowViewModel @Inject constructor(
 
             val reminder = appDatabase.appDao().getReminderById(reminderId)
 
-            reminderTitle = reminder.Title
-            reminderDate = reminder.Date
-            reminderTime = reminder.Time
+            if (reminder == null) {
 
-            userName = reminder.Name
-            userEmail = reminder.Email
-            userPictureLarge = reminder.PictureLarge
-            userPictureThumbnail = reminder.PictureThumbnail
+                reminderId = -1L
 
-        }
+                reminderTitle = ""
+                reminderDate = ""
+                reminderTime = ""
+
+                userName = ""
+                userEmail = ""
+                userPictureLarge = ""
+                userPictureThumbnail = ""
+            } else {
+                reminderTitle = reminder.Title
+                reminderDate = reminder.Date
+                reminderTime = reminder.Time
+
+                userName = reminder.Name
+                userEmail = reminder.Email
+                userPictureLarge = reminder.PictureLarge
+                userPictureThumbnail = reminder.PictureThumbnail
+            }
+                    }
     }
 
 }

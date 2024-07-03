@@ -44,7 +44,7 @@ class ShowActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val index = intent.action?.indexOf(":")
-        val id = index?.let { intent.action?.substring(it + 1)?.toLong() ?: 0L }
+        val id = index?.let { intent.action?.substring(it + 1)?.toLong() ?: -1L }
 
         setContent {
 
@@ -57,7 +57,10 @@ class ShowActivity : ComponentActivity() {
             ReminderTheme {
 
                 LaunchedEffect(Unit) {
-                    showViewModel.getReminderById()
+                    if (showViewModel.reminderId != -1L) {
+                        showViewModel.getReminderById()
+                    }
+
                 }
 
                 androidx.compose.material3.Scaffold(
@@ -131,103 +134,117 @@ class ShowActivity : ComponentActivity() {
                     },
 
                     content = { padding ->
-                        Column(
-                            modifier = Modifier
-                                .padding(padding)
-                                .fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
 
-
-                            TextField(
-                                enabled = false,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 4.dp),
-                                label = { Text(stringResource(id = R.string.title)) },
-                                value = showViewModel.reminderTitle,
-                                colors = TextFieldDefaults.outlinedTextFieldColors(
-                                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                                    disabledBorderColor = MaterialTheme.colorScheme.onSurface,
-                                ),
-                                onValueChange = {},
-                            )
-
-                            TextField(
-                                enabled = false,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 4.dp),
-                                label = { Text(stringResource(id = R.string.user)) },
-                                value = showViewModel.userName,
-                                colors = TextFieldDefaults.outlinedTextFieldColors(
-                                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                                    disabledBorderColor = MaterialTheme.colorScheme.onSurface,
-                                ),
-                                onValueChange = {},
-                            )
-                            TextField(
-                                enabled = false,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 4.dp),
-                                label = { Text(stringResource(id = R.string.email)) },
-                                value = showViewModel.userEmail,
-                                colors = TextFieldDefaults.outlinedTextFieldColors(
-                                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                                    disabledBorderColor = MaterialTheme.colorScheme.onSurface,
-                                ),
-                                onValueChange = {},
-                            )
-                            TextField(
-                                enabled = false,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 4.dp),
-                                label = { Text(stringResource(id = R.string.date)) },
-                                value = showViewModel.reminderDate,
-                                colors = TextFieldDefaults.outlinedTextFieldColors(
-                                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                                    disabledBorderColor = MaterialTheme.colorScheme.onSurface,
-                                ),
-                                onValueChange = {},
-                            )
-                            TextField(
-                                enabled = false,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 4.dp),
-                                label = { Text(stringResource(id = R.string.time)) },
-                                value = showViewModel.reminderTime,
-                                colors = TextFieldDefaults.outlinedTextFieldColors(
-                                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                                    disabledBorderColor = MaterialTheme.colorScheme.onSurface,
-                                ),
-                                onValueChange = {},
-                            )
-
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 4.dp),
-                            ) {
-                                SubcomposeAsyncImage(
+                            if (showViewModel.reminderId == -1L) {
+                                Column(
                                     modifier = Modifier
-                                        .fillMaxWidth(),
-                                    contentScale = ContentScale.FillWidth,
-                                    model = showViewModel.userPictureLarge,
-                                    contentDescription = null,
+                                        .padding(padding)
+                                        .fillMaxSize(),
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                ) {
+                                    Text(stringResource(id = R.string.reminder_not_found))
+                                }
+                            } else {
+
+                                Column(
+                                    modifier = Modifier
+                                        .padding(padding)
+                                        .fillMaxSize(),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                ) {
 
 
-                                    loading = {
-                                        CircularProgressIndicator()
-                                    },
-                                )
+                                    TextField(
+                                        enabled = false,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 4.dp),
+                                        label = { Text(stringResource(id = R.string.title)) },
+                                        value = showViewModel.reminderTitle,
+                                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                            disabledBorderColor = MaterialTheme.colorScheme.onSurface,
+                                        ),
+                                        onValueChange = {},
+                                    )
+
+                                    TextField(
+                                        enabled = false,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 4.dp),
+                                        label = { Text(stringResource(id = R.string.user)) },
+                                        value = showViewModel.userName,
+                                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                            disabledBorderColor = MaterialTheme.colorScheme.onSurface,
+                                        ),
+                                        onValueChange = {},
+                                    )
+                                    TextField(
+                                        enabled = false,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 4.dp),
+                                        label = { Text(stringResource(id = R.string.email)) },
+                                        value = showViewModel.userEmail,
+                                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                            disabledBorderColor = MaterialTheme.colorScheme.onSurface,
+                                        ),
+                                        onValueChange = {},
+                                    )
+                                    TextField(
+                                        enabled = false,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 4.dp),
+                                        label = { Text(stringResource(id = R.string.date)) },
+                                        value = showViewModel.reminderDate,
+                                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                            disabledBorderColor = MaterialTheme.colorScheme.onSurface,
+                                        ),
+                                        onValueChange = {},
+                                    )
+                                    TextField(
+                                        enabled = false,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 4.dp),
+                                        label = { Text(stringResource(id = R.string.time)) },
+                                        value = showViewModel.reminderTime,
+                                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                            disabledBorderColor = MaterialTheme.colorScheme.onSurface,
+                                        ),
+                                        onValueChange = {},
+                                    )
+
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 4.dp),
+                                    ) {
+                                        SubcomposeAsyncImage(
+                                            modifier = Modifier
+                                                .fillMaxWidth(),
+                                            contentScale = ContentScale.FillWidth,
+                                            model = showViewModel.userPictureLarge,
+                                            contentDescription = null,
+
+
+                                            loading = {
+                                                CircularProgressIndicator()
+                                            },
+                                        )
+                                    }
+
+                                }
+
                             }
-
                         }
-
-                    }
 
                 )
             }

@@ -56,7 +56,7 @@ class MainViewModel @Inject constructor(
 
     var reminderListEntity by mutableStateOf(listOf<ReminderEntity>())
 
-    var reminderId = 0L
+    var reminderId = -1L
     var reminderTitle by mutableStateOf("")
     var reminderDate by mutableStateOf("")
     var reminderTime by mutableStateOf("")

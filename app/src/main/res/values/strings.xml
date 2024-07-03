@@ -24,4 +24,5 @@
     <string name="remind_5_min_before_meeting">Remind 5 min before the meeting</string>
     <string name="show_reminder">Show reminder</string>
     <string name="show_all_reminders">Show all reminders</string>
+    <string name="reminder_not_found">Reminder not found</string>
 </resources>
