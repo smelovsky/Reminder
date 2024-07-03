@@ -100,25 +100,28 @@ class MainViewModel @Inject constructor(
 
             appDatabase.appDao().unselectAllReminders()
 
-            val reminderTime = getRemindertime(reminderEntity.Date, reminderEntity.Time)
-
             val id = getAppDao().insertReminder(reminderEntity)
 
-            val alarm = Alarm(
-                id = id,
-                name = reminderEntity.Name,
-                reminderTime = reminderTime,
-                meetingDate = reminderEntity.Date,
-                meetingTime = reminderEntity.Time)
+            if (reminderEntity.Time.isNotEmpty()) {
+                val reminderTime = getRemindertime(reminderEntity.Date, reminderEntity.Time)
 
-            val newAlarmId = alarm.hashCode()
+                val alarm = Alarm(
+                    id = id,
+                    name = reminderEntity.Name,
+                    reminderTime = reminderTime,
+                    meetingDate = reminderEntity.Date,
+                    meetingTime = reminderEntity.Time)
 
-            reminderEntity.AlarmId = newAlarmId
-            reminderEntity.Id = id
+                val newAlarmId = alarm.hashCode()
 
-            appDatabase.appDao().updateReminder(reminderEntity)
+                reminderEntity.AlarmId = newAlarmId
+                reminderEntity.Id = id
 
-            mainViewModel.scheduleReminder(alarm = alarm, oldAlarmId = 0, newAlarmId = newAlarmId)
+                appDatabase.appDao().updateReminder(reminderEntity)
+
+                mainViewModel.scheduleReminder(alarm = alarm, oldAlarmId = 0, newAlarmId = newAlarmId)
+            }
+
         }
     }
 
