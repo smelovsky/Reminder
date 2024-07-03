@@ -102,6 +102,9 @@ fun PermissionsScreen(
                                 } else if (!mainViewModel.getPermissionsApi().hasPostNotificationPermissions(activity)
                                 ) {
                                     mainViewModel.getPermissionsApi().requestPostNotificationPermissions(activity)
+                                } else if (!mainViewModel.getPermissionsApi().hasAlarmPermissions(activity)
+                                ) {
+                                    mainViewModel.getPermissionsApi().requestAlarmPermissions(activity)
                                 }
                             }
                         }

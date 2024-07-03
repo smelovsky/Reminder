@@ -1,16 +1,16 @@
 package com.example.reminder
 
-import android.app.NotificationManager
-import android.content.Context
+import android.app.AlarmManager
 import android.content.DialogInterface
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.reminder.ui.navigation.Navigation
 import com.example.reminder.ui.theme.ReminderTheme
@@ -83,6 +83,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+
         if (isAppInited) {
             mainViewModel.getPermissionsApi().hasAllPermissions(this)
         }

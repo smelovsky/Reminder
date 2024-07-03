@@ -2,14 +2,17 @@ package com.example.reminder.permissions
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlarmManager
 import android.content.Context
-import android.content.ContextWrapper
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
-import android.util.Log
+import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.reminder.mainViewModel
+
 
 var basePermissions = arrayOf(
     Manifest.permission.INTERNET,
@@ -20,6 +23,7 @@ var basePermissions = arrayOf(
 val postNotificationPermissions = arrayOf(
     Manifest.permission.POST_NOTIFICATIONS,
 )
+
 
 data class PermissionsViewState(
     val INTERNET: Boolean = false,
@@ -32,10 +36,13 @@ data class PermissionsViewState(
 
 class PermissionsImpl(val context: Context): PermissionsApi {
 
-    private fun Context.findActivity(): Activity? = when (this) {
-        is Activity -> this
-        is ContextWrapper -> baseContext.findActivity()
-        else -> null
+    init {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            basePermissions = arrayOf(
+                Manifest.permission.INTERNET,
+                Manifest.permission.ACCESS_NOTIFICATION_POLICY,
+            )
+        }
     }
 
     override fun hasAllPermissions(activity: Activity): Boolean{
@@ -47,6 +54,10 @@ class PermissionsImpl(val context: Context): PermissionsApi {
         }
 
         if (!hasPostNotificationPermissions(activity)) {
+            result = false
+        }
+
+        if (!hasAlarmPermissions(activity)) {
             result = false
         }
 
@@ -82,7 +93,7 @@ class PermissionsImpl(val context: Context): PermissionsApi {
 
     override fun hasPostNotificationPermissions(activity: Activity): Boolean{
 
-        val permission = //true // TODO
+        val permission =
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
@@ -97,16 +108,48 @@ class PermissionsImpl(val context: Context): PermissionsApi {
         return permission
     }
 
+    override fun hasAlarmPermissions(activity: Activity): Boolean{
+
+        val permission =
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager?
+            if (alarmManager!!.canScheduleExactAlarms()) {
+                true
+            } else {
+                false
+            }
+        } else {
+            (ContextCompat.checkSelfPermission(context, Manifest.permission.SCHEDULE_EXACT_ALARM)
+                    == PackageManager.PERMISSION_GRANTED)
+        }
+
+        mainViewModel.permissionsViewState.value =
+            mainViewModel.permissionsViewState.value.copy(SCHEDULE_EXACT_ALARM = permission)
+
+        return permission
+    }
+
 
     override fun requestPostNotificationPermissions(activity: Activity) {
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.requestPermissions(activity, postNotificationPermissions,101)
-        } else {
         }
     }
 
     override fun requestBasePermissions(activity: Activity) {
         ActivityCompat.requestPermissions(activity, basePermissions,101)
+    }
+
+    override fun requestAlarmPermissions(activity: Activity) {
+
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager?
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && !alarmManager!!.canScheduleExactAlarms()) {
+            val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+            intent.setData(Uri.fromParts("package", context.getPackageName(), null))
+            activity.startActivityForResult(intent, 55)
+        }
     }
 
 
