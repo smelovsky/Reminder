@@ -1,7 +1,6 @@
 package com.example.reminder
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -10,7 +9,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.reminder.data.database.AppDatabase
 import com.example.reminder.data.database.dao.AppDao
 import com.example.reminder.data.database.model.ReminderEntity
-//import com.example.reminder.data.restapi.repository.Repository
 import com.example.reminder.data.restapi.repository.RestapiRepositoryApi
 import com.example.reminder.permissions.PermissionsApi
 import com.example.reminder.permissions.PermissionsViewState
@@ -57,6 +55,7 @@ class MainViewModel @Inject constructor(
     var reminderListEntity by mutableStateOf(listOf<ReminderEntity>())
 
     var reminderId = -1L
+    var reminderAlarmId = 0
     var reminderTitle by mutableStateOf("")
     var reminderDate by mutableStateOf("")
     var reminderTime by mutableStateOf("")
@@ -119,7 +118,11 @@ class MainViewModel @Inject constructor(
 
                 appDatabase.appDao().updateReminder(reminderEntity)
 
-                mainViewModel.scheduleReminder(alarm = alarm, oldAlarmId = 0, newAlarmId = newAlarmId)
+                mainViewModel.scheduleReminder(
+                    alarm = alarm,
+                    oldAlarmId = 0,
+                    newAlarmId = newAlarmId,
+                    true)
             }
 
         }
@@ -142,9 +145,14 @@ class MainViewModel @Inject constructor(
         reminderEntity.AlarmId = newAlarmId
 
         GlobalScope.launch {
+
             getAppDao().updateReminder(reminderEntity)
 
-            mainViewModel.scheduleReminder(alarm = alarm, oldAlarmId = oldAlarmId, newAlarmId = newAlarmId)
+            mainViewModel.scheduleReminder(
+                alarm = alarm,
+                oldAlarmId = oldAlarmId,
+                newAlarmId = newAlarmId,
+                reminderEntity.Time.isNotEmpty())
 
         }
     }
@@ -172,7 +180,8 @@ class MainViewModel @Inject constructor(
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //
 
-    fun scheduleReminder(alarm: Alarm, oldAlarmId: Int, newAlarmId: Int) {
+    fun scheduleReminder(alarm: Alarm, oldAlarmId: Int, newAlarmId: Int, isTimeNotEmpty: Boolean) {
+
         viewModelScope.launch {
 
             val service = ReminderNotificationService(context)
@@ -181,6 +190,7 @@ class MainViewModel @Inject constructor(
                 alarm = alarm,
                 oldAlarmId = oldAlarmId,
                 newAlarmId = newAlarmId,
+                isTimeNotEmpty = isTimeNotEmpty,
             )
         }
     }

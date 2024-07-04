@@ -47,6 +47,7 @@ import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.room.ColumnInfo
 import coil.compose.SubcomposeAsyncImage
 import com.example.reminder.data.database.model.ReminderEntity
@@ -145,7 +146,7 @@ fun EditScreen(
 
                                     val reminderEntity  = ReminderEntity (
                                         Id = mainViewModel.reminderId,
-                                        AlarmId = 0,
+                                        AlarmId = mainViewModel.reminderAlarmId,
                                         Title = mainViewModel.reminderTitle,
                                         Name = mainViewModel.userName,
                                         Email = mainViewModel.userEmail,
@@ -259,6 +260,7 @@ fun EditScreen(
                     }
                 )
 
+
                 Box(modifier = Modifier
                     .fillMaxWidth()
                     .clickable { focusManager.clearFocus(true) }
@@ -355,24 +357,41 @@ fun TimePicker(
         is24HourView,
     )
 
-    TextField(
-        label = { Text(stringResource(id = R.string.time)) },
-        value = value,
-        onValueChange = onValueChange,
-        enabled = false,
+    Row (
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 4.dp)
-            .clickable {
-                focusManager.clearFocus(true)
-                dialog.show()
-            },
-        keyboardOptions = keyboardOptions,
-        keyboardActions = keyboardActions,
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+    ){
+
+        TextField(
+            label = { Text(stringResource(id = R.string.time)) },
+            value = value,
+            onValueChange = onValueChange,
+            enabled = false,
+            modifier = Modifier
+                .fillMaxWidth(0.9F)
+                .clickable {
+                    focusManager.clearFocus(true)
+                    dialog.show()
+                },
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+            )
         )
-    )
+
+
+        IconButton(
+            onClick = { onValueChange("") },
+        ) {
+            androidx.compose.material.Icon(
+                painter = painterResource(R.drawable.ic_delete),
+                contentDescription = "Clear time",
+            )
+        }
+
+    }
 }
 
 @Composable

@@ -111,7 +111,7 @@ fun MainScreen(
                         onClick = {
 
                             mainViewModel.reminderId = -1L
-                            //mainViewModel.oldAlarmId = 0
+                            mainViewModel.reminderAlarmId = 0
                             mainViewModel.reminderTitle = ""
                             mainViewModel.reminderDate = ""
                             mainViewModel.reminderTime = ""
@@ -351,6 +351,7 @@ fun ReminderItemBlock(
                 onClick = {
 
                     mainViewModel.reminderId = reminder.Id
+                    mainViewModel.reminderAlarmId = reminder.AlarmId
                     mainViewModel.reminderTitle = reminder.Title
                     mainViewModel.reminderDate = reminder.Date
                     mainViewModel.reminderTime = reminder.Time

@@ -5,14 +5,14 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.util.Log
 
 const val ALARM_DATA = "alarm_data"
 
 class ReminderNotificationService(
     private val context: Context
 ) {
-    fun scheduleNotification(alarm: Alarm, oldAlarmId: Int, newAlarmId: Int) {
+    fun scheduleNotification(alarm: Alarm, oldAlarmId: Int, newAlarmId: Int, isTimeNotEmpty: Boolean) {
+
         val intent = Intent(context, ReminderNotificationReceiver::class.java)
         intent.putExtra(ALARM_DATA, alarm)
 
@@ -39,11 +39,14 @@ class ReminderNotificationService(
                     alarmService.cancel(oldPendingIntent)
                 }
 
-                alarmService.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    time,
-                    pendingIntent
-                )
+                if (isTimeNotEmpty) {
+                    alarmService.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        time,
+                        pendingIntent
+                    )
+                }
+
             } catch (exception: SecurityException) {
 
             }
